@@ -448,7 +448,7 @@ export default class Usuario extends React.PureComponent {
           >
             <MiTextArea
               css={{
-                width: "400px",
+                width: "200px",
                 height: "144px",
                 align: "top",
                 padding: "5px",
