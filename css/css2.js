@@ -472,8 +472,22 @@ exports.botont3 = glamorous.div(({ theme }) => (
   }));
 
 
+
+
+
+
+
 exports.a3 = glamorous.a(({ theme }) => (
   {
     fontSize: theme.link.size,
 
+  }));
+
+
+
+
+exports.foto1 = glamorous.img(({ theme }) => (
+  {
+  	 width: 400,
+     // height: height,
   }));
