@@ -6,7 +6,7 @@ import React from 'react';
 
 
 
-// --------- Reloj
+// --------- Reloj para github
 
 
 class Clock extends React.Component {
