@@ -104,13 +104,14 @@ const DrawtreeR = props => {
           />
 
           <Objetos.Vineta1
-            key={index}
+            key={c.nodo}
             x={props.treedata[index].x}
             y={props.treedata[index].y}
             size={11}
             ccolor={"DarkSlateGrey"}
             tcolor={props.treedata[index].color}
             texto={c.entidad + " - " + c.valor}
+            nodo={c.nodo}
             // href={"https://www.w3.org/TR/SVG/"}
           />
 
@@ -162,9 +163,9 @@ export default class Line extends React.Component {
 
       treedata: [{ children: [] }],
 
-      pluma: { x: 150, y: 500 },
+      pluma: { x: 150, y: 600 },
 
-      canvas: 1000,
+      canvas: 2000,
 
       hasCapture: false,
       circleLeft: 180,
@@ -182,7 +183,7 @@ export default class Line extends React.Component {
   } // ------------------------- Constructor
 
   componentWillMount() {
-    this.getdatosmap();
+    this.getdatosmap(1);
   }
 
   onDown = event => {
@@ -296,12 +297,27 @@ export default class Line extends React.Component {
 
   maketree2 = (kwdata, parent, indent, canvas, plumax, plumay) => {
     try {
-      const ponerpluma = (micanvas, plumay, ramas) => {
-        let intervalo = micanvas / ramas;
-        let mitad = ramas / 2;
-        let nuevaplumay = plumay - intervalo * mitad;
+      const ponerpluma = (micanvas, plumay, ramas, indent) => {
+        if (indent == 1) {
+          let intervalo = micanvas / ramas;
+          let mitad = ramas / 2;
+          let nuevaplumay = plumay - intervalo * mitad;
+          return nuevaplumay;
+        }
 
-        return nuevaplumay;
+        if (indent == 2) {
+          let intervalo = micanvas / ramas;
+          let mitad = ramas / 2;
+          let nuevaplumay = plumay - intervalo * mitad;
+          return nuevaplumay;
+        }
+
+        if (indent == 3) {
+          let intervalo = micanvas / ramas;
+          let mitad = ramas / 2;
+          let nuevaplumay = plumay;
+          return nuevaplumay;
+        }
       };
 
       const miintervalo = (miindex, miindent, micanvas, ramas) => {
@@ -310,11 +326,12 @@ export default class Line extends React.Component {
         }
 
         if (miindent == 2) {
-          return miindex * (micanvas / ramas);
+          return miindex * (15 + micanvas / ramas);
         }
 
         if (miindent == 3) {
-          return 30 * miindex;
+          return 25 * miindex;
+          // return miindex * (micanvas / ramas);
         }
       };
 
@@ -327,15 +344,15 @@ export default class Line extends React.Component {
       let miplumay = 0;
 
       if (indent == 1) {
-        miplumay = ponerpluma(500, plumay, filtro.length);
+        miplumay = ponerpluma(650, plumay, filtro.length, indent);
       }
 
       if (indent == 2) {
-        miplumay = ponerpluma(300, plumay, filtro.length);
+        miplumay = ponerpluma(300, plumay, filtro.length, indent);
       }
 
       if (indent == 3) {
-        miplumay = ponerpluma(250, plumay, filtro.length);
+        miplumay = ponerpluma(250, plumay, filtro.length, indent);
       }
 
       return filtro.map((c, index) => {
@@ -345,11 +362,9 @@ export default class Line extends React.Component {
           kwdata,
           c.Nodo,
           indent + 1,
-          300,
+          500,
           plumax + 200,
-          miplumay +
-            miintervalo(index, indent, canvas, filtro.length) *
-              (filtro.length / 2)
+          miplumay + miintervalo(index, indent, canvas, filtro.length) - 40
         );
 
         return {
@@ -372,8 +387,7 @@ export default class Line extends React.Component {
     }
   };
 
-  // async getdatosmap() {
-  getdatosmap = async () => {
+  getdatosmap = async Modelo => {
     var axdata = await axios({
       url: "https://smxai.net/graphql2",
       method: "post",
@@ -394,7 +408,7 @@ export default class Line extends React.Component {
           `,
 
         variables: {
-          Modelo: 6
+          Modelo: Modelo
         }
       }
     });
@@ -404,12 +418,11 @@ export default class Line extends React.Component {
         axdata.data.data.KwModelo,
         0,
         1,
-        500,
+        600,
         this.state.pluma.x,
         this.state.pluma.y
       )
     });
-
     this.setState({ KwModelo: axdata.data.data.KwModelo });
   };
 
@@ -441,6 +454,7 @@ export default class Line extends React.Component {
       }
     });
 
+    console.log(axdata.data.data.KwRespuesta);
     if (axdata.data.data.KwRespuesta.length > 0) {
       this.setState({ Respuesta: axdata.data.data.KwRespuesta[0].data });
       return axdata.data.data.KwRespuesta[0].data;
@@ -476,6 +490,13 @@ export default class Line extends React.Component {
         case "2185581258130500": // somoscasas
           WIT_TOKEN = "MR23QNA7RUQJR47HIHMXSSRSNMVCNGF7";
           Modelo = 7;
+          Perfil = 1;
+          Calificacion = 0.8;
+          break;
+
+        case "1670865973219070": //Nelli
+          WIT_TOKEN = "WI24OIJ53CSCIG2OZNIYSPTPC2A4LH3E";
+          Modelo = 9;
           Perfil = 1;
           Calificacion = 0.8;
           break;
@@ -681,9 +702,9 @@ export default class Line extends React.Component {
 
       let witNodo = await this.Nodos(witEntidades, this.state.KwModelo);
 
-      console.log("witnodo: " + JSON.stringify(witNodo));
+      //console.log("witnodo: " + JSON.stringify(witNodo));
 
-      let Respuesta = await this.getrespuesta(6, 2, witNodo);
+      let Respuesta = await this.getrespuesta(1, 1, witNodo);
 
       console.log("respuesta: " + Respuesta);
 
@@ -721,7 +742,7 @@ export default class Line extends React.Component {
                     class="noatiende"
                     color={this.state.botonquery}
                     onClick={() => {
-                      this.witquery("1620194274934376", this.state.textoquery);
+                      this.witquery("1670865973219070", this.state.textoquery);
                     }}
                   >
                     Enviar
@@ -747,8 +768,9 @@ export default class Line extends React.Component {
         </div>
 
         <div>
-          <svg width={1440} height={987}>
-            <circle
+          <svg width={1440} height={1300}>
+            {/*
+              <circle
               cx={this.state.circleLeft}
               cy={this.state.circleTop}
               r={10}
@@ -758,6 +780,7 @@ export default class Line extends React.Component {
               onMouseUp={this.onUp}
               onMouseUp={this.onUp}
             />
+          */}
 
             <Objetos.Vineta1
               key={1}
@@ -766,7 +789,7 @@ export default class Line extends React.Component {
               size={15}
               ccolor={"DarkSlateGrey"}
               tcolor={"black"}
-              texto={"Aprende a Comer"}
+              texto={"Temas"}
               lado={"Izq"}
             />
 
@@ -784,224 +807,3 @@ export default class Line extends React.Component {
 }
 
 // ------------------------------------
-
-//
-//
-//
-// const Drawtree = (props) => {
-//   try {
-//
-//     let treearmado
-//
-//
-//     if(props.treedata.length>0){
-//
-//
-//         treearmado = props.treedata.map((c, index) => (
-//
-//           <g>
-//
-//
-//               <Objetos.Diagonal1
-//                 sourcex={props.this.state.pluma.x}
-//                 sourcey={props.this.state.pluma.y}
-//                 targetx={props.this.state.treedata[index].x}
-//                 targety={props.this.state.treedata[index].y}
-//                 stroke={2}
-//                 color={props.this.state.treedata[index].linecolor}
-//               />
-//
-//
-//               <Objetos.Vineta1
-//                 key={index}
-//                 x={props.this.state.treedata[index].x}
-//                 y={props.this.state.treedata[index].y}
-//                 size={11}
-//                 ccolor={"DarkSlateGrey"}
-//                 tcolor={props.this.state.treedata[index].color}
-//                 texto={c.entidad + ' - ' + c.valor}
-//                 // href={"https://www.w3.org/TR/SVG/"}
-//               />
-//
-//
-//               <Drawtree2
-//                 treedata={props.treedata[index].children}
-//                 this={props.this}
-//                 treeindex={index}
-//               />
-//
-//
-//           </g>
-//
-//         ))
-//
-//     }
-//
-//
-//     return (
-//
-//
-//       <g>
-//
-//         {treearmado}
-//
-//       </g>
-//
-//     )
-//
-//
-//   } catch (e) {
-//     console.error(e);
-//   }
-//
-//
-// }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-// const Drawtree2 = (props) => {
-//   try {
-//
-//     let treearmado
-//
-//
-//     if(props.treedata.length>0){
-//
-//         treearmado = props.treedata.map((c, index) => (
-//
-//           <g>
-//
-//
-//               <Objetos.Diagonal1
-//                 sourcex={props.this.state.treedata[props.treeindex].x}
-//                 sourcey={props.this.state.treedata[props.treeindex].y}
-//                 targetx={props.this.state.treedata[props.treeindex].children[index].x}
-//                 targety={props.this.state.treedata[props.treeindex].children[index].y}
-//                 stroke={2}
-//                 color={props.this.state.treedata[props.treeindex].children[index].linecolor}
-//               />
-//
-//
-//               <Objetos.Vineta1
-//                 key={index}
-//                 x={props.this.state.treedata[props.treeindex].children[index].x}
-//                 y={props.this.state.treedata[props.treeindex].children[index].y}
-//                 size={11}
-//                 ccolor={"DarkSlateGrey"}
-//                 tcolor={props.this.state.treedata[props.treeindex].children[index].color}
-//                 texto={c.entidad + ' - ' + c.valor}
-//                 // href={"https://www.w3.org/TR/SVG/"}
-//               />
-//
-//
-//               <Drawtree3
-//                 treedata={props.treedata[index].children}
-//                 this={props.this}
-//                 treeindex={props.treeindex}
-//                 treeindex2={index}
-//               />
-//
-//
-//           </g>
-//
-//         ))
-//
-//     }
-//
-//
-//     return (
-//
-//
-//       <g>
-//
-//         {treearmado}
-//
-//       </g>
-//
-//     )
-//
-//
-//   } catch (e) {
-//     console.error(e);
-//   }
-//
-//
-// }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-// const Drawtree3 = (props) => {
-//   try {
-//
-//     let treearmado
-//
-//
-//     if(props.treedata.length>0){
-//
-//
-//         treearmado = props.treedata.map((c, index) => (
-//
-//           <g>
-//
-//               <Objetos.Diagonal1
-//                 sourcex={props.this.state.treedata[props.treeindex].children[props.treeindex2].x}
-//                 sourcey={props.this.state.treedata[props.treeindex].children[props.treeindex2].y}
-//                 targetx={props.this.state.treedata[props.treeindex].children[props.treeindex2].children[index].x}
-//                 targety={props.this.state.treedata[props.treeindex].children[props.treeindex2].children[index].y}
-//                 stroke={2}
-//                 color={props.this.state.treedata[props.treeindex].children[props.treeindex2].children[index].linecolor}
-//               />
-//
-//
-//               <Objetos.Vineta1
-//                 key={index}
-//                 x={props.this.state.treedata[props.treeindex].children[props.treeindex2].children[index].x}
-//                 y={props.this.state.treedata[props.treeindex].children[props.treeindex2].children[index].y}
-//                 size={11}
-//                 ccolor={"DarkSlateGrey"}
-//                 tcolor={props.this.state.treedata[props.treeindex].children[props.treeindex2].children[index].color}
-//                 texto={c.entidad + ' - ' + c.valor}
-//                 // href={"https://www.w3.org/TR/SVG/"}
-//               />
-//
-//
-//           </g>
-//
-//         ))
-//     }
-//
-//
-//     return (
-//
-//
-//       <g>
-//
-//         {treearmado}
-//
-//       </g>
-//
-//     )
-//
-//
-//   } catch (e) {
-//     console.error(e);
-//   }
-//
-//
-// }
-//
-//
